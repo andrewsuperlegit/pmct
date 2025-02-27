@@ -38,6 +38,7 @@ const useProducts = (initialFilters: Filters) => {
         setProducts(response.data);
       })
       .catch(error => {
+        // Definitely would want to show the user an error message in these catch blocks, but that's beyond the scope of this exercise.
         console.error('There was an error fetching the products!', error);
       });
   };

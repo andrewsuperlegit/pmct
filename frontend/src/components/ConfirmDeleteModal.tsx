@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText } from "@mui/material";
 
 interface ConfirmDeleteModalProps{
     handleDeleteProduct: () => void;
