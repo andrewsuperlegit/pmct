@@ -1,5 +1,7 @@
 const express = require("express");
 const cors = require("cors");
+const test = require("node:test");
+const assert = require("node:assert");
 const app = express();
 
 app.use(cors());
@@ -10,6 +12,7 @@ app.listen(PORT, () => {
   console.log("Server is Listening on PORT:", PORT);
 });
 
+
 let mockDb = [
     { id: 1, name: 'Fries', available: true },
     { id: 2, name: 'Big Mac', available: true },
@@ -19,6 +22,10 @@ let mockDb = [
     { id: 6, name: '(New) Cheeseburger', available: false },
     { id: 7, name: 'Sundae', available: true },
 ];
+
+// in the real world we would sanitize the user input before dropping it in a db but for this we'll just assume the user is not malicious here
+// because that's not in the task list and i don't want to add dependencies or spend a bunch of time here. 
+// But this is definitely a situation where we would want to add a sanitization library.
 
 app.get('/products', (req, res) => {
     let filteredProducts = mockDb;
@@ -36,13 +43,22 @@ app.get('/products', (req, res) => {
     });
 
     if (req.query.search) {
-        const searchRegex = new RegExp(req.query.search, 'i');
-        filteredProducts = filteredProducts.filter(product => searchRegex.test(product.name));
+        filteredProducts = search(req.query.search, filteredProducts, 'name');
     }
 
     res.json(filteredProducts);
 });
-// in the real world we would sanitize the user input before dropping it in a db but for this we'll just assume the user is not malicious
+
+function search(searchExpression, arrOfObjs, propertyToFilter){
+    // replace (,),and .'s in req.query.search with \(,\), and \.)
+    // again, I'm just fulfilling the requirements of the task but I would want to talk to the project manager about what the intended behavior is here and would
+    // definitely want to use a well tested library for sanitizing user input because other special characters would cause this to fail/break/be exploitable.
+    const allowedChars = searchExpression.replace(/[\(\)\.]/g, '\\$&');
+    const searchRegex = new RegExp(allowedChars, 'i');
+    return arrOfObjs.filter(product => searchRegex.test(product[propertyToFilter]));
+}
+
+
 app.post('/products', (req, res) => {
     const newProduct = {
         id: mockDb.length + 1,
@@ -75,4 +91,31 @@ app.delete('/products/:id', (req, res) => {
     }
     mockDb = mockDb.filter(p => p.id !== productId);
     res.status(204).send();
+});
+
+
+
+test("search should return all products when search is empty", () => {
+    const result = search('', mockDb, 'name');
+    assert.deepEqual(mockDb, result);
+});
+
+test("search should return 2 objects when pc is the search term", () => {
+    const result = search('pc', mockDb, 'name');
+    assert.equal(2, result.length);
+});
+
+test("search should return 1 object when ( is the search term", () => {
+    const result = search('(', mockDb, 'name');
+    assert.equal(1, result.length);
+});
+
+test("search should return 1 object when ) is the search term", () => {
+    const result = search('(', mockDb, 'name');
+    assert.equal(1, result.length);
+});
+
+test("search should return 2 objects when . is the search term", () => {
+    const result = search('.', mockDb, 'name');
+    assert.equal(2, result.length);
 });
