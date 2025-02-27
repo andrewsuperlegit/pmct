@@ -28,6 +28,9 @@ const useProducts = (initialFilters: Filters) => {
   const fetchProducts = () => {
     let query = `http://localhost:3000/products?`;
     if (filters.sortBy) query += `sortBy=${filters.sortBy}&`;
+    // In a real project I would want to understand why we need to make a request to the server to search for products if we're already
+    // being given the full list of products; it would be more efficient to filter the products on the client side. But that's beyond 
+    // the scope of this exercise.
     if (filters.search) query += `search=${filters.search}&`;
 
     axios.get(query)

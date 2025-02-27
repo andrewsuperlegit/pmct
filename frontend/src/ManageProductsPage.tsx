@@ -19,7 +19,6 @@ const ManageProductsPage: React.FC = () => {
   };
 
   const handleDeleteProduct = (id: number) => {
-    // Create react dialog to confirm deletion of product before making request to server
     deleteProduct(id);
   };
 
